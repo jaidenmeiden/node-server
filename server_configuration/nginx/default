@@ -1,0 +1,43 @@
+server {
+# If you don't have a domain, you can leave it as localhost..
+
+	server_name <**DOMAIN**>;
+
+	location / {
+	    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	    proxy_set_header Host $host;
+	    proxy_http_version 1.1;
+	    proxy_pass http://backend;
+	}
+
+# Lifting this port directly depends on whether we have a digital certificate, whether we buy it or get it with 'lets encrypt'
+# Also for our local tests we could use 'openssl'.
+
+	listen [::]:443 ssl ipv6only=on;
+	listen 443 ssl;
+	ssl_certificate /etc/letsencrypt/live/<**DOMAIN**>/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/<**DOMAIN**>/privkey.pem;
+	include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; 
+}
+
+# Here, the load balancing is done one by one with 'round robin', if you need to change the mode,
+# you should check the following link http://nginx.org/en/docs/http/load_balancing.html
+
+upstream backend {
+	server 127.0.0.1:3000;
+	server 127.0.0.1:3001;
+	server 127.0.0.1:3002;
+	server 127.0.0.1:3003;
+
+}
+
+server {
+    if ($host = <**DOMAIN**>) {
+        return 301 https://$host$request_uri;
+    } 
+        listen 80 ;
+        listen [::]:80 ;
+    server_name <**DOMAIN**>;
+    return 404; 
+}
