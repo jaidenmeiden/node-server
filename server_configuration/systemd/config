@@ -1,0 +1,17 @@
+#The file to modify is located in /lib/systemd/system
+#A file must be created with a service extension and an @ (at sign) before the point so that it receives the port parameters
+
+Description=Load balancing
+Documentation=https://github.com/jaidenmeiden/node-server
+After=network.target
+
+[Service]
+Environment=PORT=%i
+Type=simple
+User=nodejs
+WorkingDirectory=/home/nodejs/node-server
+ExecStart=/usr/bin/node /home/nodejs/node-server/server.js
+Restart-on=failure
+
+[Install]
+WantedBy=multi-user.target
